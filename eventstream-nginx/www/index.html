@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Browser Events</title>
+    <link rel="stylesheet" href="lib/bootstrap.min.css">
+</head>
+<body class="bg-light">
+    <script>
+
+        const eventTypes = {
+            "pageview": ["homepage", "about", "checkout"],
+            "engagement": ["click", "scroll", "hover"]
+        };
+
+        /**
+         * POST event data
+         */
+        function publishEvent(data) {
+            fetch("/", {
+                method: "POST",
+                body: JSON.stringify(data)
+            })
+            .then((res) => res.json())
+            .then((event) => {
+                console.log(event);
+            });
+        }
+
+        /**
+         * bind a click event that kicks off the publish event with given data
+         */
+        function bindPublishEvent(btn, data) {
+            var eventData = data;
+            btn.addEventListener("click", function(e) {
+                publishEvent(data);
+            });
+        }
+
+        /**
+         * main function renders templates and binds events
+         */
+        function main() {
+
+            var $main = document.createElement("main");
+            $main.className = "container";
+            $main.innerHTML = `
+            <div class="d-flex align-items-center p-3 my-3 text-white-50 bg-purple rounded box-shadow">
+                <div class="lh-100">
+                    <h6 class="mb-0 text-black lh-100">Event Server</h6>
+                    <small>publish json to event service</small>
+                </div>
+            </div>
+            `;
+
+            for(eventType in eventTypes) {
+                var $eventType = document.createElement("div");
+                $eventType.className = "my-3 p-3 bg-white rounded box-shadow";
+                $eventType.innerHTML += `
+                <div>
+                    <h6 class="border-bottom border-gray pb-2 mb-0">${eventType}</h6>
+                </div>
+                `;
+
+                var eventValues = eventTypes[eventType];
+                for(idx in eventValues) {
+                    var eventValue = eventValues[idx];
+                    var $eventValue = document.createElement("div");
+                    $eventValue.className = "media text-muted pt-3 border-bottom border-gray";
+                    $eventValue.innerHTML += `
+                        <p class="media-body pb-3 mb-0 small lh-125">
+                            <strong class="d-block text-gray-dark">${eventValue}</strong>        
+                            <code>
+                                    {
+                                        "eventType": "${eventType}",
+                                        "eventValue": "${eventValue}"
+                                    }
+                            </code>
+                        </p>
+                    `;
+
+                    var $publishButton = document.createElement("button");
+                    $publishButton.className = "btn btn-link";
+                    $publishButton.innerText = `Publish ${eventValue}`;
+                    bindPublishEvent($publishButton, {eventType, eventValue});
+                    $eventValue.appendChild($publishButton);
+                    $eventType.appendChild($eventValue);
+                }  
+
+                // publish all events for eventType
+                var $publishAll = document.createElement("small");
+                $publishAll.className = "d-block text-right mt-3";
+                var $publishAllButton = document.createElement("button");
+                $publishAllButton.className = "btn btn-link";
+                $publishAllButton.innerText = `Publish All Events`;
+                bindPublishEvent($publishAllButton, eventValues.map((eventValue, i) => {
+                    return {eventType, eventValue};
+                }));
+                $publishAll.appendChild($publishAllButton);
+                $eventType.appendChild($publishAll);
+
+                $main.appendChild($eventType);
+            }
+            document.body.append($main);
+        }
+
+        /** document ready */
+        document.addEventListener("DOMContentLoaded", main);
+    </script>
+</body>
+</html>
