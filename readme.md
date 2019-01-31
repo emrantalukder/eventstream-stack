@@ -1,4 +1,5 @@
 # Swarm/ElasticSearch Challenge
+> author: Emran Talukder <emran.talukder@gmail.com>
 
 ## Usage
 
