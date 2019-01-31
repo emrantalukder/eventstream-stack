@@ -7,6 +7,14 @@
 * click on "Publish" for each specific event
 * sent bulk events by pressing "Publish All" for that event type
 
+## Configuration Options
+
+* `docker-compose.yml` contains sensible defaults
+* `eventstream-transform` is the transform service that can be scaled using replicas.
+* `eventstream-transform` uses the following Environment Variables:
+    * `GUNICORN_WORKERS=2`: set the number of workers depending on the num cpus
+    * `ELASTICSEARCH_URL=http://elasticsearch2:9200`: used for testing between different elasticsearch services
+
 #### Rational
 
 Click and engagement sometimes come in batched, so I've tried to simulate this behavior using some javascript in the `index.html` found in `eventstream-nginx/www`. AJAX request are sent to the backend server running the `eventstream-transform` flask application.
@@ -41,3 +49,9 @@ Here are some ways to add resiliency to the stack:
 * Consider using ElasticSearch's Bulk API, batching techniques, timing or throttling the stream to N messages per second.
 
 ## Testing
+
+* Code was tested locally 
+* Services were tested by downing them one at a time, and making sure exceptions were handled appropriately.
+* Unit tests are provided in `eventstream-transform/test_transform.py`
+    * run using `pytest eventstream-transform/test_transform.py`
+    * more tests are needed for the ES failure, write to disk (durable_queue function test)

@@ -22,7 +22,6 @@ def durable_write(event):
 
 # write to elasticsearch
 def es_write(event):
-    print(event)
     try:
         res = es.index(index=event['eventType'], doc_type='event', body=event)
         return res
@@ -32,14 +31,24 @@ def es_write(event):
         return event
 
 
+# find event id
+def find_event_id(event):
+    try:
+        eventType = event['eventType']
+        eventValue = event['eventValue']
+        with open(f'data/{eventType}.json') as eventFile:
+            data = json.load(eventFile)
+            id = data[eventValue]
+            eventId = id
+        return eventId
+    except Exception as e:
+        logging.error(str(e))
+        return None
+
+
 # transform event by loading and parsing eventType file from disk
 def xform(event):
-    eventType = event['eventType']
-    eventValue = event['eventValue']
-    with open(f'data/{eventType}.json') as eventFile:
-        data = json.load(eventFile)
-        id = data[eventValue]
-        event['eventId'] = id
+    eventId = find_event_id(event)
     res = es_write(event)
     return res
 
