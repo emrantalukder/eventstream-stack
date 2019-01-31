@@ -8,6 +8,8 @@ services:
       - eventstreamnet
   eventstream-transform:
     image: emrantalukder/eventstream-transform:latest
+    deploy:
+      replicas: 2
     volumes:
       - ./eventstream-transform/data:/app/data
     environment:

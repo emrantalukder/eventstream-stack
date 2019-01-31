@@ -15,8 +15,6 @@ The `eventstream-transform` python app gets the POST request, checks if it is a 
 
 If the ElasticSearch cluster is not responsive, the event will still be processed but instead of going to elasticsearch (which has timed out), the event will be written to file.
 
-
-
 ## Docker Images
 
 The included `docker-compose.yml` file uses the images below.
