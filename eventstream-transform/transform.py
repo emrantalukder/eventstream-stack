@@ -1,12 +1,38 @@
 import os
 import socket
+import logging
 from time import strftime
 from datetime import datetime
 from flask import Flask, request, json, jsonify
 from elasticsearch import Elasticsearch
 
-es = Elasticsearch(['http://elasticsearch:9200'])
+ELASTICSEARCH_URL = os.getenv('ELASTICSEARCH_URL', 'http://elasticsearch:9200')
 
+app = Flask(__name__)
+es = Elasticsearch([ELASTICSEARCH_URL])
+
+
+# write to a "durable" queue file
+def durable_write(event):
+    with open("data/durable_queue.json", 'a+') as durable_queue:
+        json.dump(event, durable_queue)
+        durable_queue.write("\n")
+    return event
+
+
+# write to elasticsearch
+def es_write(event):
+    print(event)
+    try:
+        res = es.index(index=event['eventType'], doc_type='event', body=event)
+        return res
+    except Exception as e:
+        logging.error(str(e))
+        res = durable_write(event)
+        return event
+
+
+# transform event by loading and parsing eventType file from disk
 def xform(event):
     eventType = event['eventType']
     eventValue = event['eventValue']
@@ -14,12 +40,11 @@ def xform(event):
         data = json.load(eventFile)
         id = data[eventValue]
         event['eventId'] = id
-    res = es.index(index=eventType, doc_type='event', body=event)
+    res = es_write(event)
     return res
 
-# web endpoint:
-app = Flask(__name__)
 
+# web endpoint:
 @app.route("/", methods=["POST"])
 def event_stream():
     try:

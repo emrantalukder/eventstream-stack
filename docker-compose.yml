@@ -8,6 +8,10 @@ services:
       - esnet
   eventstream-transform:
     image: eventstream-transform
+    volumes:
+      - ./eventstream-transform/data:/app/data
+    environment:
+      - "GUNICORN_WORKERS=2"
     ports:
       - "9000:80"
     networks:
