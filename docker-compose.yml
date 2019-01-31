@@ -1,21 +1,22 @@
 version: "3.3"
 services:
   eventstream-nginx:
-    image: eventstream-nginx
+    image: emrantalukder/eventstream-nginx:latest
     ports:
       - "8080:80"
     networks:
-      - esnet
+      - eventstreamnet
   eventstream-transform:
-    image: eventstream-transform
+    image: emrantalukder/eventstream-transform:latest
     volumes:
       - ./eventstream-transform/data:/app/data
     environment:
       - "GUNICORN_WORKERS=2"
+      - "ELASTICSEARCH_URL=http://elasticsearch2:9200"
     ports:
       - "9000:80"
     networks:
-      - esnet
+      - eventstreamnet
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:6.5.4
     deploy:
@@ -28,7 +29,7 @@ services:
       - "9200:9200"
       - "9300:9300"
     networks:
-      - esnet
+      - eventstreamnet
   elasticsearch2:
     image: docker.elastic.co/elasticsearch/elasticsearch:6.5.4
     deploy:
@@ -38,12 +39,12 @@ services:
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
       - "discovery.zen.ping.unicast.hosts=elasticsearch"
     networks:
-      - esnet
+      - eventstreamnet
   kibana:
     image: 'docker.elastic.co/kibana/kibana:6.5.4'
     ports:
       - "5601:5601"
     networks:
-      - esnet
+      - eventstreamnet
 networks:
-  esnet:
+  eventstreamnet:

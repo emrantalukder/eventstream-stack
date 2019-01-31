@@ -1,9 +1,30 @@
 # Swarm/ElasticSearch Challenge
 
-## Docker Images
+## Usage
 
 * deploy stack: `docker stack deploy -c docker-compose.yml eventstream`
-* check services: `docker service ls`
+* open browser to `http://localhost:8080`
+* click on "Publish" for each specific event
+* sent bulk events by pressing "Publish All" for that event type
+
+#### Rational
+
+Click and engagement sometimes come in batched, so I've tried to simulate this behavior using some javascript in the `index.html` found in `eventstream-nginx/www`. AJAX request are sent to the backend server running the `eventstream-transform` flask application.
+
+The `eventstream-transform` python app gets the POST request, checks if it is a batch of events or a single event, reads the json file corresponding to the eventType, extracts the event ID, and finally sends an index request to ElasticSearch.
+
+If the ElasticSearch cluster is not responsive, the event will still be processed but instead of going to elasticsearch (which has timed out), the event will be written to file.
+
+
+
+## Docker Images
+
+The included `docker-compose.yml` file uses the images below.
+
+* nginx: `emrantalukder/eventstream-nginx:latest`
+* transform service: `emrantalukder/eventstream-transform:latest`
+* elasticsearch 6.5.4: `docker.elastic.co/elasticsearch/elasticsearch:6.5.4`
+* kibana 6.5.4 (optional): `docker.elastic.co/kibana/kibana:6.5.4`
 
 ## Resiliency
 
